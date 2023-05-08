@@ -1,0 +1,15 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Zapatos",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "postgres",
+      "Username": "zapatos",
+      "PassFile": "/pgadmin4/pgpass",
+      "Comment": "You will probably need to set the password (zapatos) by hand, as the pgpass file is not read.",
+      "SSLMode": "prefer"
+    }
+  }
+}

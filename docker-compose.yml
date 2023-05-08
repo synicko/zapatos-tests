@@ -1,0 +1,34 @@
+services:
+  zapatos-postgres:
+    image: postgres:latest
+    command: ['postgres', '-c', 'log_statement=all']
+    env_file: ./docker/postgres.env
+    container_name: zapatos-postgres
+    volumes:
+      - ./docker/seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro
+    ports:
+      - 5432:5432
+    # networks:
+    #   zapatos:
+    #     aliases:
+    #       - postgres
+
+
+#   zapatos-pg-admin:
+#     container_name: zapatos-pg-admin
+#     image: dpage/pgadmin4:latest
+#     volumes:
+#       - ./docker/pgadmin.servers.json:/pgadmin4/servers.json:ro
+#       - ./docker/pgadmin.pgpass:/pgadmin4/pgpass:ro
+#     depends_on:
+#       - zapatos-postgres
+#     env_file: ./docker/pg-admin.env
+#     ports:
+#       - 5050:80
+#     networks:
+#       - zapatos
+
+# networks:
+#   zapatos:
+#     external: true
+#     name: zapatos

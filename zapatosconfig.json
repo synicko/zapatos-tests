@@ -1,0 +1,17 @@
+{
+  "db": {
+    "connectionString": "postgresql://zapatos:zapatos@localhost:5432/zapatos"
+  },
+  "outDir": "./types",
+  "customTypesTransform": "PgMyType",
+  "schemas": {
+    "shop": {
+      "include": "*",
+      "exclude": []
+    },
+    "billing": {
+      "include": "*",
+      "exclude": []
+    }
+  }
+}
