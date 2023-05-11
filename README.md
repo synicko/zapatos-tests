@@ -16,6 +16,7 @@ const orders = await db
         {
           column: 'last_name',
         },
+        db.SelectResultMode.String
       ),
     },
   })
@@ -46,6 +47,7 @@ const orders = await db
         'shop.user',
         { id: db.parent('user_id') },
         { extra: db.sql`${'first_name'} || ' ' || ${'last_name'}` },
+        db.SelectResultMode.String
       ),
     },
   })
@@ -74,6 +76,7 @@ const products = await db
         'shop.order_item',
         { product_id: db.parent('id') },
         { array: 'order_id' },
+        db.SelectResultMode.NumberArray
       ),
     },
   })
@@ -103,14 +106,15 @@ will return an array of objects like
 
 ```typescript
 {
-  user_id: db.nested<number>(
-    db.selectOne('shop.user', { first_name: 'Nico' }, { column: 'id' }),
+  user_id: db.nested(
+    db.selectOne('shop.user', { first_name: 'Nico' }, { column: 'id' }, db.SelectResultMode.Number),
   ),
-  product_id: db.nested<number>(
+  product_id: db.nested(
     db.selectOne(
       'shop.product',
       { description: db.conditions.like('%Dune%') },
       { column: 'id' },
+       db.SelectResultMode.Number
     ),
   ),
 }
@@ -122,8 +126,8 @@ will return an array of objects like
 const users = await db
   .select('shop.user', {
     id: db.conditions.eq(
-      db.nested<number>(
-        db.selectOne('shop.order', { id: 4 }, { column: 'user_id' }),
+      db.nested(
+        db.selectOne('shop.order', { id: 4 }, { column: 'user_id' }, db.SelectResultMode.Number),
       ),
     ),
   })
@@ -137,11 +141,12 @@ const users = await db
     'shop.user',
     {
       id: db.conditions.isIn(
-        db.nested<number[]>(
+        db.nested(
           db.select(
             'shop.order',
             { id: db.conditions.ne(3) },
             { column: 'user_id' },
+            , db.SelectResultMode.NumberArray
           ),
         ),
       ),
@@ -153,6 +158,15 @@ const users = await db
   .run(pool);
 ```
 
+## New SelectResultMode values
+
+In order to correctly type the result of sub-queries, 6 new SelectResultMode are available (also in selectOne and selectExactlyOne) :
+- Boolean
+- Number
+- String
+- BooleanArray
+- NumberArray
+- StringArray
 
 ## Required
 

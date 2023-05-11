@@ -4,6 +4,12 @@ import * as db from 'zapatos/db';
 describe('Conditions', () => {
   let pool: Pool;
 
+  const execute = async <T extends db.SQLFragment<any>>(
+    query: T,
+  ): Promise<db.RunResultForSQLFragment<T>> => {
+    return query.run(pool);
+  };
+
   beforeAll(() => {
     pool = new Pool({
       connectionString: 'postgres://zapatos:zapatos@localhost/zapatos',
@@ -39,272 +45,353 @@ describe('Conditions', () => {
   ];
 
   it('should work as usual with a classic whereable', async () => {
-    const user = await db
-      .selectOne('shop.user', {
+    const user = await execute(
+      db.selectOne('shop.user', {
         last_name: 'Charpin',
         first_name: db.sql`${db.self} = 'Nico'`,
-      })
-      .run(pool);
+      }),
+    );
     expect(user).toEqual(expected[0]);
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.isDistinctFrom', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.isDistinctFrom(
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 3 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 3 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
           ),
         },
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(2);
     expect(users).toEqual(expected.slice(0, 2));
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.isNotDistinctFrom', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.isNotDistinctFrom(
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 3 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 3 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
           ),
         },
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(1);
     expect(users[0]).toEqual(expected[2]);
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.eq', async () => {
-    const users = await db
-      .select('shop.user', {
+    const users = await execute(
+      db.select('shop.user', {
         id: db.conditions.eq(
-          db.nested<number>(
-            db.selectOne('shop.order', { id: 4 }, { column: 'user_id' }),
+          db.nested(
+            db.selectOne(
+              'shop.order',
+              { id: 4 },
+              { column: 'user_id' },
+              db.SelectResultMode.Number,
+            ),
           ),
         ),
-      })
-      .run(pool);
+      }),
+    );
     expect(users.length).toBe(1);
     expect(users[0]).toEqual(expected[0]);
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.ne', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.ne(
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 3 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 3 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
           ),
         },
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(2);
     expect(users).toEqual(expected.slice(0, 2));
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.gt', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.gt(
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 1 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 1 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
           ),
         },
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(2);
     expect(users).toEqual(expected.slice(1));
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.lte', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.lte(
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 2 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 2 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
           ),
         },
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(2);
     expect(users).toEqual(expected.slice(0, 2));
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.lt', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.lt(
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 3 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 3 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
           ),
         },
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(2);
     expect(users).toEqual(expected.slice(0, 2));
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.gte', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.gte(
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 2 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 2 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
           ),
         },
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(2);
     expect(users).toEqual(expected.slice(1));
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.between', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.between(
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 1 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 1 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 2 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 2 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
           ),
         },
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(2);
     expect(users).toEqual(expected.slice(0, 2));
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.betweenSymetric', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.betweenSymmetric(
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 2 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 2 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 1 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 1 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
           ),
         },
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(2);
     expect(users).toEqual(expected.slice(0, 2));
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.notBetween', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.notBetween(
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 1 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 1 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 2 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 2 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
           ),
         },
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(1);
     expect(users[0]).toEqual(expected[2]);
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.notBetweenSymetric', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.notBetweenSymmetric(
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 2 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 2 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
-            db.nested<number>(
-              db.selectOne('shop.order', { id: 1 }, { column: 'user_id' }),
+            db.nested(
+              db.selectOne(
+                'shop.order',
+                { id: 1 },
+                { column: 'user_id' },
+                db.SelectResultMode.Number,
+              ),
             ),
           ),
         },
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(1);
     expect(users[0]).toEqual(expected[2]);
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.isIn', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.isIn(
-            db.nested<number[]>(
+            db.nested(
               db.select(
                 'shop.order',
                 { id: db.conditions.ne(3) },
                 { column: 'user_id' },
+                db.SelectResultMode.NumberArray,
               ),
             ),
           ),
@@ -312,23 +399,24 @@ describe('Conditions', () => {
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(2);
     expect(users).toEqual(expected.slice(0, 2));
   });
 
   it('should retrieve the correct set of records with a nested query in whereable and conditions.isNotIn', async () => {
-    const users = await db
-      .select(
+    const users = await execute(
+      db.select(
         'shop.user',
         {
           id: db.conditions.isNotIn(
-            db.nested<number[]>(
+            db.nested(
               db.select(
                 'shop.order',
                 { id: db.conditions.ne(3) },
                 { column: 'user_id' },
+                db.SelectResultMode.NumberArray,
               ),
             ),
           ),
@@ -336,8 +424,8 @@ describe('Conditions', () => {
         {
           order: { by: 'id', direction: 'ASC' },
         },
-      )
-      .run(pool);
+      ),
+    );
     expect(users.length).toBe(1);
     expect(users[0]).toEqual(expected[2]);
   });
